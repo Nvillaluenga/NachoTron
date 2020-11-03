@@ -1,10 +1,7 @@
 import tensorflow as tf
-import os, sys
-parent_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-sys.path.append(parent_dir)
-from Nachotron.hparams import hparams
-from Nachotron.feeder import feeder
-from Nachotron.nachotron import Encoder
+from hparams import hparams
+from feeder import feeder
+from nachotron import Encoder
 
 # Bahdanau Attention layer
 class BahdanauAttention(tf.keras.layers.Layer):

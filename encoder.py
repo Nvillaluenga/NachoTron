@@ -1,10 +1,7 @@
 import tensorflow as tf
 import numpy as np
-import os, sys
-parent_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-sys.path.append(parent_dir)
-from Nachotron.hparams import hparams
-from Nachotron.feeder import feeder
+from hparams import hparams
+from feeder import feeder
 import io
 
 class Encoder(tf.keras.Model):
@@ -77,7 +74,7 @@ if __name__ == "__main__":
       print(f"\nInput batch shape: {input_batch.shape}")
       sample_hidden = encoder.initialize_hidden_state()
       # print (f'Encoder Hidden state shape: (batch size, units) {sample_hidden.shape}')
-      output, _, _, _, _ = encoder.call(input_batch, sample_hidden)
+      output, _, _, _, _ = encoder(input_batch, sample_hidden)
       print(f'\nOutput shape: {output.shape}')
       print(f'\nOutput batch: {output}')
 

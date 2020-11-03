@@ -1,9 +1,5 @@
 import tensorflow as tf
 import numpy as np
-
-import os, sys
-parent_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-sys.path.append(parent_dir)
 from hparams import hparams
 import io
 
@@ -11,7 +7,7 @@ class feeder():
 
   def create_dataset(self, paths = "example", num_examples = -1):
     """Create a dataset with all the paths passed"""
-    paths = ["D:\\Nacho\\Facultad\\Proyecto Final\\Tacotron-2\\datasets\\es_ES\\by_book\\female\\karen_savage\\angelina\\metadata.csv"] if paths == "example"  else paths
+    paths = ["D:\\Nacho\\Facultad\\Proyecto Final\\Nachotron\\datasets\\es_ES\\by_book\\female\\karen_savage\\angelina\\metadata.csv"] if paths == "example"  else paths
     lines = []
     for path in paths:
       for line in io.open(path, encoding='UTF-8').read().strip().split("\n"):
