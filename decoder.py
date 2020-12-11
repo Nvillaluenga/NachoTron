@@ -17,7 +17,6 @@ class Decoder(tf.keras.Model):
     lstm_activation = hparams['dec_lstm_activation']
     
     # Create the different layers of the encoder
-    
     self.prenet_1 = tf.keras.layers.Dense(
       units = prenet_units,
       activation = prenet_activation)
