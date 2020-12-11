@@ -1,7 +1,7 @@
 import tensorflow as tf
 from hparams import hparams
 from feeder import feeder
-from nachotron import Encoder
+from encoder import Encoder
 
 # Bahdanau Attention layer
 class BahdanauAttention(tf.keras.layers.Layer):

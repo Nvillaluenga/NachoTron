@@ -3,7 +3,7 @@ import numpy as np
 from hparams import hparams
 import io
 
-class feeder():
+class Feeder():
 
   def create_dataset(self, paths = "example", num_examples = -1):
     """Create a dataset with all the paths passed"""
@@ -42,7 +42,7 @@ class feeder():
 
 if __name__ == "__main__":
   print("Nachotron feeder test:")
-  feeder = feeder()
+  feeder = Feeder()
   sentences, audio_identifier = feeder.create_dataset()
   print(f'\nSentence 1 "{sentences[0]}" tittle 1 "{audio_identifier[0]}"') 
   vectorized_string = feeder.vectorize_string("My name is Nacho")
@@ -50,5 +50,6 @@ if __name__ == "__main__":
   print(f'\nchar2idx: {feeder.char2idx}')
   input_batch, output_batch = feeder.get_batch((sentences, audio_identifier), hparams['batch_size'])
   print('\nBatches:\n')
+  print(input_batch.shape)
   print(input_batch)
   print(output_batch)
