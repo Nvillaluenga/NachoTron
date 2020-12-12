@@ -39,6 +39,9 @@ class Feeder():
     input_batch = np.reshape(input_batch, (batch_size, self.max_len_string))
     output_batch = np.array([audio_identifier[idx] for idx in indexes])
     return input_batch, output_batch
+  
+  def get_mel(self, mel_path):
+    return np.load(mel_path)
 
 if __name__ == "__main__":
   print("Nachotron feeder test:")
@@ -53,3 +56,6 @@ if __name__ == "__main__":
   print(input_batch.shape)
   print(input_batch)
   print(output_batch)
+  mel = feeder.get_mel(output_batch[0])
+  print("MEL shape")
+  print(f"Shape {mel.shape} Mel: {mel}")

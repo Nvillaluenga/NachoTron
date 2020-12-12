@@ -21,6 +21,7 @@ hparams = {
   "dec_prenet_activation" : 'relu',
 	"dec_lstm_units" : 512, # for the 2 stack LSTM layers of the decoder
  	"dec_lstm_activation" : 'tanh',
+  "dec_lstm_zoneout" : 0.1,
   "dec_lstm_mi" : (1, 0.5, 0.5),
 }
 
