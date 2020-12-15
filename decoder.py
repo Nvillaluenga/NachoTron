@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 from hparams import hparams
+from .layers.lstm import LSTM
 
 class Decoder(tf.keras.Model):
   
@@ -15,6 +16,8 @@ class Decoder(tf.keras.Model):
     
     lstm_units = hparams['dec_lstm_units']
     lstm_activation = hparams['dec_lstm_activation']
+    lstm_zoneout = hparams['dec_lstm_zoneout']
+    lstm_mi = hparams['dec_lstm_mi']
     
     # Create the different layers of the encoder
     self.prenet_1 = tf.keras.layers.Dense(
@@ -26,8 +29,19 @@ class Decoder(tf.keras.Model):
       activation = prenet_activation)
     self.drop_out_2 = tf.keras.layers.Dropout(prenet_dropout)
     
-    self.lstm_1 = tf.keras.layers.LSTM(
+    self.lstm_1 = LSTM(
       units = lstm_units,
+      zoneout_h = lstm_zoneout,
+      zoneout_c = lstm_zoneout,
+      mi = lstm_mi,
+      activation = lstm_activation,
+      return_sequences = True,
+      return_state = True) 
+    self.lstm_2 = LSTM(
+      units = lstm_units,
+      zoneout_h = lstm_zoneout,
+      zoneout_c = lstm_zoneout,
+      mi = lstm_mi,
       activation = lstm_activation,
       return_sequences = True,
       return_state = True)
