@@ -24,6 +24,10 @@ hparams = {
   "dec_lstm_activation" : 'tanh',
   "dec_lstm_zoneout" : 0.1,
   "dec_lstm_mi" : (1, 0.5, 0.5),
+  "dec_stop_token_units" : 1, # number of units of the stop token
+  "dec_stop_token_activation" : "sigmoid",
+  "dec_frame_projection_activation" : "relu",
+  "dec_outputs_per_step" : 1, #number of frames to generate at each decoding step (increase to speed up computation and allows for higher batch size, decreases audio quality)
   
   
   #Mel spectrogram
