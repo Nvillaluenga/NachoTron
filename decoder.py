@@ -5,7 +5,7 @@ from .layers.lstm import LSTM
 
 class Decoder(tf.keras.Model):
   
-  def __init__(self, hparams, is_training, scope):  
+  def __init__(self, hparams, is_training, scope):
     """Nachotron Encoder"""
     super(Decoder, self).__init__()
     batch_size = hparams['batch_size']
@@ -46,6 +46,13 @@ class Decoder(tf.keras.Model):
       return_sequences = True,
       return_state = True)
     
+    self.stop_prediction = tf.keras.layers.Dense(
+      units = hparams["dec_stop_token_units"],
+      activation = hparams["dec_stop_token_activation"])
+
+    self.frame_projection = tf.keras.layers.Dense(
+      units = hparams["num_mels"] * hparams["dec_outputs_per_step"],
+      activation = hparams["dec_frame_projection_activation"])
     
 
     

@@ -163,7 +163,7 @@ if __name__ == "__main__":
   print(f"final_carry_state {tf.shape(final_carry_state)}")
   
   ##### TEST IT WORKS FOR BUILDING
-  if (False):
+  if (True):
     TRAINING_SIZE = 50000
     DIGITS = 3
     REVERSE = True

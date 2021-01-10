@@ -1,7 +1,7 @@
 import tensorflow as tf
 import numpy as np
 from hparams import hparams
-from feeder import feeder
+from feeder import Feeder
 import io
 
 class Encoder(tf.keras.Model):
@@ -44,7 +44,7 @@ class Encoder(tf.keras.Model):
     self.bidirectional_LSTM = tf.keras.layers.Bidirectional(
     tf.keras.layers.LSTM(
       units = self.lstm_units,
-      activation = hparams['enc_lstm_activation'],
+      activation = hparams["enc_lstm_activation"],
       return_sequences = True,
       return_state = True))
 
@@ -63,12 +63,12 @@ class Encoder(tf.keras.Model):
     return [tf.zeros((self.batch_size, self.lstm_units)) for i in range(4)]
 
 if __name__ == "__main__":
-  print("Create feeder")
-  feeder = feeder()
+  print("Create Feeder")
+  feeder = Feeder()
   sentences, audio_tittles = feeder.create_dataset()
   print("Nachotron Encoder test:")
   encoder = Encoder(hparams, True, "Test")
-  input_batch, _ = feeder.get_batch((sentences, audio_tittles), encoder.batch_size)
+  input_batch, _ = feeder.get_batch(encoder.batch_size, (sentences, audio_tittles))
   encoder.build(input_batch.shape)
   print(encoder.summary())
   print(f"\nInput batch shape: {input_batch.shape}")
