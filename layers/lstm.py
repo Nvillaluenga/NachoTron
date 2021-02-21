@@ -56,8 +56,6 @@ class LSTM(tf.keras.layers.LSTM):
     super(LSTM, self).build(input_shape)
     if self.mi is not None:
       alpha_init, beta1_init, beta2_init = self.mi
-      print('#############################################')
-      print(f'{alpha_init}, {beta1_init}, {beta2_init}')
 
       self.mi_alpha = self.add_weight(
         shape = (4 * self.output_dim, ),

@@ -4,7 +4,6 @@ import tensorflow as tf
 # Default hyperparameters
 hparams = {
   #Encoder parameters
-  "enc_conv_num_layers" : 3, # number of encoder convolutional layers
   "enc_conv_kernel_size" : (5, ), # size of encoder convolution filters for each layer
   "enc_conv_filters" : 512, # number of encoder convolutions filters for each layer
   "enc_conv_activation" : 'relu',
@@ -28,7 +27,10 @@ hparams = {
   "dec_stop_token_activation" : "sigmoid",
   "dec_frame_projection_activation" : "relu",
   "dec_outputs_per_step" : 1, #number of frames to generate at each decoding step (increase to speed up computation and allows for higher batch size, decreases audio quality)
-  
+  "dec_postnet_kernel_size" : (5, ), # size of decoder postnet convolution filters for each layer
+  "dec_postnet_filters" : 512, # number of decoder postnet convolutions filters for each layer
+  "dec_postnet_activation" : "tanh",
+  "dec_postnet_conv_num_layers" : 5,
   
   #Mel spectrogram
   "num_mels" : 80, #Number of mel-spectrogram channels and local conditioning dimensionality
