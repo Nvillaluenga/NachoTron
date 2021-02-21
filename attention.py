@@ -1,6 +1,6 @@
 import tensorflow as tf
 from hparams import hparams
-from feeder import feeder
+from feeder import Feeder
 from encoder import Encoder
 
 # Bahdanau Attention layer
@@ -10,7 +10,6 @@ class BahdanauAttention(tf.keras.layers.Layer):
     self.W1 = tf.keras.layers.Dense(units)
     self.W2 = tf.keras.layers.Dense(units)
     self.V = tf.keras.layers.Dense(1)
-    self.units = units
     self.batch_size = hparams['batch_size']
 
   def call(self, query, values):
@@ -19,8 +18,8 @@ class BahdanauAttention(tf.keras.layers.Layer):
         self.W1(query_with_time_axis) + self.W2(values)))
     attention_weights = tf.nn.softmax(score, axis=1)
 
-    context_vector = attention_weights * values
-    context_vector = tf.reduce_sum(context_vector, axis=1)
+    context_vector = tf.reduce_sum(
+      (attention_weights * values), axis=1)
 
     return context_vector, attention_weights
     
@@ -28,10 +27,10 @@ class BahdanauAttention(tf.keras.layers.Layer):
         return tf.zeros((self.batch_size, 2*hparams["enc_lstm_units"]))
 
 if __name__ == "__main__":
-  feeder = feeder()
+  feeder = Feeder()
   sentences, audio_tittles = feeder.create_dataset()
   encoder = Encoder(hparams, True, "Test")
-  input_batch, _ = feeder.get_batch((sentences, audio_tittles), encoder.batch_size)
+  input_batch, _ = feeder.get_batch(encoder.batch_size, (sentences, audio_tittles))
   encoder.build(input_batch.shape)
   print(encoder.summary())
   sample_hidden = encoder.initialize_hidden_state()
@@ -41,7 +40,7 @@ if __name__ == "__main__":
   sample_hidden = attention_layer.initialize_hidden_state()
   
   print(f"Hidden {sample_hidden.shape}, enc output {sample_output.shape}")
-  attention_result, attention_weights = attention_layer(sample_hidden, sample_output)
+  context_vector, attention_weights = attention_layer(sample_hidden, sample_output)
 
-  print("Attention result shape: (batch size, units) {}".format(attention_result.shape))
+  print("Attention result shape: (batch size, units) {}".format(context_vector.shape))
   print("Attention weights shape: (batch_size, sequence_length, 1) {}".format(attention_weights.shape))
