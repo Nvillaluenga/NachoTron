@@ -8,9 +8,10 @@ from encoder import Encoder
 
 class Decoder(tf.keras.Model):
   
-  def __init__(self, hparams, is_training, scope):
-    """Nachotron Encoder"""
+  def __init__(self, hparams):
+    """Nachotron Decoder"""
     super(Decoder, self).__init__()
+    
     self.batch_size = hparams['batch_size']
     
     prenet_units = hparams['dec_prenet_units']
@@ -21,11 +22,6 @@ class Decoder(tf.keras.Model):
     lstm_activation = hparams['dec_lstm_activation']
     lstm_zoneout = hparams['dec_lstm_zoneout']
     lstm_mi = hparams['dec_lstm_mi']
-
-    postnet_kernel_size = hparams["dec_postnet_kernel_size"]
-    postnet_filters = hparams["dec_postnet_filters"]
-    postnet_activation = hparams["dec_postnet_activation"]
-    self.postnet_no_layers = hparams["dec_postnet_conv_num_layers"]
 
     self.frame_projection_units = hparams["num_mels"] * hparams["dec_outputs_per_step"]
     frame_projection_activation = hparams["dec_frame_projection_activation"]
@@ -67,25 +63,6 @@ class Decoder(tf.keras.Model):
       units = self.frame_projection_units,
       activation = frame_projection_activation)
 
-    # I think I would need to move the postnet to a different model to
-    # minimize the summed mean squared error (MSE) from before# and after the post-net to aid convergence
-    self.postnet = [tf.keras.layers.Conv1D(
-      filters = postnet_filters,
-      kernel_size = postnet_kernel_size,
-      activation = postnet_activation,
-      padding = 'same') for _ in range(self.postnet_no_layers-1)]
-    self.postnet_normalization = [tf.keras.layers
-      .BatchNormalization() for _ in range (self.postnet_no_layers-1)]
-    self.postnet_final = tf.keras.layers.Conv1D(
-      filters = postnet_filters,
-      kernel_size = postnet_kernel_size,
-      activation = None,
-      padding = 'same')
-
-    self.residual_frame_projection = tf.keras.layers.Dense(
-      units = self.frame_projection_units,
-      activation = frame_projection_activation)
-
   def initialize_hidden_state(self):
     return [[tf.zeros((self.batch_size, self.lstm_units)) for _ in range(2)] for _ in range(3)]
 
@@ -117,16 +94,7 @@ class Decoder(tf.keras.Model):
     # Predict the mel spectogram as a linear projection
     x = self.frame_projection(x)
 
-    # Use postnet
-    residual_x = None
-    for i in range(self.postnet_no_layers-1):
-      residual_x = self.postnet[i](x if residual_x is None else residual_x)
-      residual_x = self.postnet_normalization[i](residual_x)
-    residual_x = self.postnet_final(residual_x)
-    residual_x = self.residual_frame_projection(residual_x)
-
-    x = x + residual_x
-    # [batch_size, 1, units] => [batch_size, units]
+    # # [batch_size, 1, units] => [batch_size, units]
     x = tf.reshape(x, (-1, x.shape[2]))
     stop_token = tf.reshape(stop_token, (-1, stop_token.shape[2]))
 
@@ -144,7 +112,7 @@ if __name__ == "__main__":
   encoder_output, _, _, _, _ = encoder(input_batch, sample_hidden)
 
   print("Create Decoder")
-  decoder = Decoder(hparams, True, "Test")
+  decoder = Decoder(hparams)
 
   print("Call Decoder")
   previous_frame_projection = tf.zeros((decoder.batch_size, decoder.frame_projection_units))
