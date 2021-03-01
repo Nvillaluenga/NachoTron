@@ -31,8 +31,6 @@ if __name__ == "__main__":
   sentences, audio_tittles = feeder.create_dataset()
   encoder = Encoder(hparams, True, "Test")
   input_batch, _ = feeder.get_batch(encoder.batch_size, (sentences, audio_tittles))
-  encoder.build(input_batch.shape)
-  print(encoder.summary())
   sample_hidden = encoder.initialize_hidden_state()
   sample_output, _, _, _, _ = encoder.call(input_batch, sample_hidden)
 

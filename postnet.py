@@ -55,7 +55,6 @@ if __name__ == "__main__":
   print("Create Encoder")
   encoder = Encoder(hparams, True, "Test")
   input_batch, _ = feeder.get_batch(encoder.batch_size, (sentences, audio_tittles))
-  encoder.build(input_batch.shape)
   sample_hidden = encoder.initialize_hidden_state()
   encoder_output, _, _, _, _ = encoder(input_batch, sample_hidden)
 

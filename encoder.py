@@ -69,14 +69,12 @@ if __name__ == "__main__":
   print("Nachotron Encoder test:")
   encoder = Encoder(hparams, True, "Test")
   input_batch, _ = feeder.get_batch(encoder.batch_size, (sentences, audio_tittles))
-  encoder.build(input_batch.shape)
-  print(encoder.summary())
   print(f"\nInput batch shape: {input_batch.shape}")
   sample_hidden = encoder.initialize_hidden_state()
   # print (f'Encoder Hidden state shape: (batch size, units) {sample_hidden.shape}')
   output, _, _, _, _ = encoder(input_batch, sample_hidden)
   print(f'\nOutput shape: {output.shape}')
-  print(f'\nOutput batch: {output}')
+  print(encoder.summary())
 
 
 

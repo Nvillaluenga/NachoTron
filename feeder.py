@@ -6,19 +6,20 @@ from os import path
 from io import open
 
 class Feeder():
-  default_path = 'D:\\Nacho\\Facultad\\Proyecto Final\\Nachotron\\datasets\\training_data'
-  default_metada_file = 'train.txt'
-  default_mel_folder = 'mels'
+  default_path = hparams['default_path']
+  default_metadata_file = hparams['default_metadata_file']
+  default_mel_folder = hparams['default_mel_folder']
 
-  def __init__(self, data_path = default_path, metada_file = default_metada_file, mel_folder = default_mel_folder):
+  def __init__(self, data_path = default_path, metadata_file = default_metadata_file, mel_folder = default_mel_folder):
     super(Feeder, self).__init__()
     self.data_path = data_path
-    self.metada_file = metada_file
+    self.metadata_file = metadata_file
     self.mel_folder = mel_folder
 
+  # Need to see a way to mantain the index of the char used, because they may be different between datastes
   def create_dataset(self, num_examples = -1):
     """Create a dataset with all the paths passed"""
-    lines = [line for line in open(path.join(self.data_path, self.metada_file), encoding='UTF-8').read().strip().split("\n")]
+    lines = [line for line in open(path.join(self.data_path, self.metadata_file), encoding='UTF-8').read().strip().split("\n")]
     sentences = np.array([line.split('|')[-1] for line in lines[:num_examples]])
     mel_identifier = np.array([line.split('|')[1] for line in lines[:num_examples]])
     letters = sorted(set( ''.join(sentences).lower() ))

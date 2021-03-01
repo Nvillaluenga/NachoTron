@@ -63,17 +63,17 @@ class Decoder(tf.keras.Model):
       units = self.frame_projection_units,
       activation = frame_projection_activation)
 
-  def initialize_hidden_state(self):
-    return [[tf.zeros((self.batch_size, self.lstm_units)) for _ in range(2)] for _ in range(3)]
+  def initial_zero_output(self):
+    return tf.zeros((self.batch_size, self.frame_projection_units))
 
-  def call(self, previous_step_decoder_output, encoder_ouput):
+  def call(self, encoder_ouput, previous_step_output):
     """
     Args:
-    - previous_step_decoder_output: self explanatory
+    - previous_step_output: self explanatory
     - encoder_output: self explanatory
     """
     # Prenet call, Used as information botleneck to aid attention convergence
-    x = self.prenet_1(previous_step_decoder_output)
+    x = self.prenet_1(previous_step_output)
     x = self.drop_out_1(x)
     x = self.prenet_2(x)
     x = self.drop_out_2(x)
@@ -107,7 +107,6 @@ if __name__ == "__main__":
   print("Create Encoder")
   encoder = Encoder(hparams, True, "Test")
   input_batch, _ = feeder.get_batch(encoder.batch_size, (sentences, audio_tittles))
-  encoder.build(input_batch.shape)
   sample_hidden = encoder.initialize_hidden_state()
   encoder_output, _, _, _, _ = encoder(input_batch, sample_hidden)
 
@@ -115,10 +114,11 @@ if __name__ == "__main__":
   decoder = Decoder(hparams)
 
   print("Call Decoder")
-  previous_frame_projection = tf.zeros((decoder.batch_size, decoder.frame_projection_units))
-  frame_projection, stop_token = decoder(previous_frame_projection, encoder_output)
+  
+  previous_step_output = decoder.initial_zero_output()
+  frame_projection, stop_token = decoder(encoder_output, previous_step_output) # First call, should use the zeroes
 
-  frame_projection, stop_token = decoder(frame_projection, encoder_output)
+  frame_projection, stop_token = decoder(encoder_output, frame_projection)
 
   print(f"Encoder Output Shape: {encoder_output.shape}")
   print(f"Stop Token Shape: {stop_token.shape}")

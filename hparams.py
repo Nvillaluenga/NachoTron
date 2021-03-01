@@ -3,6 +3,11 @@ import tensorflow as tf
 
 # Default hyperparameters
 hparams = {
+  #Feeder default values
+  "default_path" : 'D:\\Nacho\\Facultad\\Proyecto Final\\Nachotron\\datasets\\training_data',
+  "default_mel_folder" : 'mels',
+  "default_metadata_file" : 'train.txt',
+  
   #Encoder parameters
   "enc_conv_kernel_size" : (5, ), # size of encoder convolution filters for each layer
   "enc_conv_filters" : 512, # number of encoder convolutions filters for each layer
