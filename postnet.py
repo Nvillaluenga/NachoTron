@@ -56,7 +56,7 @@ if __name__ == "__main__":
   encoder = Encoder(hparams, True, "Test")
   input_batch, _ = feeder.get_batch(encoder.batch_size, (sentences, audio_tittles))
   sample_hidden = encoder.initialize_hidden_state()
-  encoder_output, _, _, _, _ = encoder(input_batch, sample_hidden)
+  encoder_output, _ = encoder(input_batch, sample_hidden)
 
   print("Create Decoder")
   decoder = Decoder(hparams)
@@ -65,8 +65,8 @@ if __name__ == "__main__":
   postnet = Postnet(hparams)
 
   print("Call Decoder and Postnet")
-  previous_frame_projection = tf.zeros((decoder.batch_size, decoder.frame_projection_units))
-  frame_projection, stop_token = decoder(previous_frame_projection, encoder_output)
+  previous_frame_projection = decoder.initial_zero_output()
+  frame_projection, stop_token = decoder(encoder_output, previous_frame_projection)
 
   residual_frame_projection = postnet(frame_projection)
 

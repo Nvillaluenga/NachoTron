@@ -88,8 +88,8 @@ class Decoder(tf.keras.Model):
 
     x = tf.concat([tf.expand_dims(context_vector, 1), x], axis=-1)
 
-    # When the prefiction is more than 0.5 we should stop, how do we stop?
-    stop_token = self.stop_prediction(x)
+    # When the stop token es 0 we should stop, we decide this, so we use this as a mask 
+    stop_token = tf.math.round(self.stop_prediction(x)) 
 
     # Predict the mel spectogram as a linear projection
     x = self.frame_projection(x)
@@ -108,7 +108,7 @@ if __name__ == "__main__":
   encoder = Encoder(hparams, True, "Test")
   input_batch, _ = feeder.get_batch(encoder.batch_size, (sentences, audio_tittles))
   sample_hidden = encoder.initialize_hidden_state()
-  encoder_output, _, _, _, _ = encoder(input_batch, sample_hidden)
+  encoder_output, _ = encoder(input_batch, sample_hidden)
 
   print("Create Decoder")
   decoder = Decoder(hparams)
