@@ -21,7 +21,8 @@ class Encoder(tf.keras.Model):
     # Create the different layers of the encoder
     self.character_embedding = tf.keras.layers.Embedding(
       hparams['char_size'],
-      hparams['char_embedding_dim'])
+      hparams['char_embedding_dim'],
+      mask_zero=True)
     self.conv_1 = tf.keras.layers.Conv1D(
       filters = filters,
       kernel_size = kernel_size,
@@ -57,7 +58,7 @@ class Encoder(tf.keras.Model):
     x = self.conv_3(x)
     x = self.batch_normalization(x)
     output, forward_h, forward_c, backward_h, backward_c =  self.bidirectional_LSTM(x, initial_state=hidden)
-    return output, forward_h, forward_c, backward_h, backward_c
+    return output, [forward_h, forward_c, backward_h, backward_c]
 
   def initialize_hidden_state(self):
     return [tf.zeros((self.batch_size, self.lstm_units)) for i in range(4)]
@@ -69,17 +70,15 @@ if __name__ == "__main__":
   print("Nachotron Encoder test:")
   encoder = Encoder(hparams, True, "Test")
   input_batch, _ = feeder.get_batch(encoder.batch_size, (sentences, audio_tittles))
-  encoder.build(input_batch.shape)
-  print(encoder.summary())
   print(f"\nInput batch shape: {input_batch.shape}")
   sample_hidden = encoder.initialize_hidden_state()
   # print (f'Encoder Hidden state shape: (batch size, units) {sample_hidden.shape}')
-  output, _, _, _, _ = encoder(input_batch, sample_hidden)
+  output, _ = encoder(input_batch, sample_hidden)
   print(f'\nOutput shape: {output.shape}')
-  print(f'\nOutput batch: {output}')
+  print(encoder.summary())
 
 
 
-  # sample_output, forward_h, forward_c, backward_h, backward_c = encoder(example_input_batch, sample_hidden)
+  # sample_output, [forward_h, forward_c, backward_h, backward_c] = encoder(example_input_batch, sample_hidden)
   # print ('Encoder Hidden state shape: (batch size, units) {}'.format(sample_hidden.shape))
   # print ('Encoder output shape: (batch size, sequence length, units) {}'.format(sample_output.shape))

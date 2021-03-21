@@ -8,9 +8,10 @@ from encoder import Encoder
 
 class Decoder(tf.keras.Model):
   
-  def __init__(self, hparams, is_training, scope):
-    """Nachotron Encoder"""
+  def __init__(self, hparams):
+    """Nachotron Decoder"""
     super(Decoder, self).__init__()
+    
     self.batch_size = hparams['batch_size']
     
     prenet_units = hparams['dec_prenet_units']
@@ -21,11 +22,6 @@ class Decoder(tf.keras.Model):
     lstm_activation = hparams['dec_lstm_activation']
     lstm_zoneout = hparams['dec_lstm_zoneout']
     lstm_mi = hparams['dec_lstm_mi']
-
-    postnet_kernel_size = hparams["dec_postnet_kernel_size"]
-    postnet_filters = hparams["dec_postnet_filters"]
-    postnet_activation = hparams["dec_postnet_activation"]
-    self.postnet_no_layers = hparams["dec_postnet_conv_num_layers"]
 
     self.frame_projection_units = hparams["num_mels"] * hparams["dec_outputs_per_step"]
     frame_projection_activation = hparams["dec_frame_projection_activation"]
@@ -67,36 +63,17 @@ class Decoder(tf.keras.Model):
       units = self.frame_projection_units,
       activation = frame_projection_activation)
 
-    # I think I would need to move the postnet to a different model to
-    # minimize the summed mean squared error (MSE) from before# and after the post-net to aid convergence
-    self.postnet = [tf.keras.layers.Conv1D(
-      filters = postnet_filters,
-      kernel_size = postnet_kernel_size,
-      activation = postnet_activation,
-      padding = 'same') for _ in range(self.postnet_no_layers-1)]
-    self.postnet_normalization = [tf.keras.layers
-      .BatchNormalization() for _ in range (self.postnet_no_layers-1)]
-    self.postnet_final = tf.keras.layers.Conv1D(
-      filters = postnet_filters,
-      kernel_size = postnet_kernel_size,
-      activation = None,
-      padding = 'same')
+  def initial_zero_output(self):
+    return tf.zeros((self.batch_size, self.frame_projection_units))
 
-    self.residual_frame_projection = tf.keras.layers.Dense(
-      units = self.frame_projection_units,
-      activation = frame_projection_activation)
-
-  def initialize_hidden_state(self):
-    return [[tf.zeros((self.batch_size, self.lstm_units)) for _ in range(2)] for _ in range(3)]
-
-  def call(self, previous_step_decoder_output, encoder_ouput):
+  def call(self, encoder_ouput, previous_step_output):
     """
     Args:
-    - previous_step_decoder_output: self explanatory
+    - previous_step_output: self explanatory
     - encoder_output: self explanatory
     """
     # Prenet call, Used as information botleneck to aid attention convergence
-    x = self.prenet_1(previous_step_decoder_output)
+    x = self.prenet_1(previous_step_output)
     x = self.drop_out_1(x)
     x = self.prenet_2(x)
     x = self.drop_out_2(x)
@@ -111,22 +88,13 @@ class Decoder(tf.keras.Model):
 
     x = tf.concat([tf.expand_dims(context_vector, 1), x], axis=-1)
 
-    # When the prefiction is more than 0.5 we should stop, how do we stop?
-    stop_token = self.stop_prediction(x)
+    # When the stop token es 0 we should stop, we decide this, so we use this as a mask 
+    stop_token = tf.math.round(self.stop_prediction(x)) 
 
     # Predict the mel spectogram as a linear projection
     x = self.frame_projection(x)
 
-    # Use postnet
-    residual_x = None
-    for i in range(self.postnet_no_layers-1):
-      residual_x = self.postnet[i](x if residual_x is None else residual_x)
-      residual_x = self.postnet_normalization[i](residual_x)
-    residual_x = self.postnet_final(residual_x)
-    residual_x = self.residual_frame_projection(residual_x)
-
-    x = x + residual_x
-    # [batch_size, 1, units] => [batch_size, units]
+    # # [batch_size, 1, units] => [batch_size, units]
     x = tf.reshape(x, (-1, x.shape[2]))
     stop_token = tf.reshape(stop_token, (-1, stop_token.shape[2]))
 
@@ -139,18 +107,18 @@ if __name__ == "__main__":
   print("Create Encoder")
   encoder = Encoder(hparams, True, "Test")
   input_batch, _ = feeder.get_batch(encoder.batch_size, (sentences, audio_tittles))
-  encoder.build(input_batch.shape)
   sample_hidden = encoder.initialize_hidden_state()
-  encoder_output, _, _, _, _ = encoder(input_batch, sample_hidden)
+  encoder_output, _ = encoder(input_batch, sample_hidden)
 
   print("Create Decoder")
-  decoder = Decoder(hparams, True, "Test")
+  decoder = Decoder(hparams)
 
   print("Call Decoder")
-  previous_frame_projection = tf.zeros((decoder.batch_size, decoder.frame_projection_units))
-  frame_projection, stop_token = decoder(previous_frame_projection, encoder_output)
+  
+  previous_step_output = decoder.initial_zero_output()
+  frame_projection, stop_token = decoder(encoder_output, previous_step_output) # First call, should use the zeroes
 
-  frame_projection, stop_token = decoder(frame_projection, encoder_output)
+  frame_projection, stop_token = decoder(encoder_output, frame_projection)
 
   print(f"Encoder Output Shape: {encoder_output.shape}")
   print(f"Stop Token Shape: {stop_token.shape}")
